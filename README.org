@@ -1,0 +1,17 @@
+#+TITLE: Worthe Signals
+#+AUTHOR: Justin Worthe
+
+I did a course back in university on signal processing and linear
+systems. Unfortunately, that was several years ago and I am not as
+fluent on the topic as I would like to be.
+
+I have a side project where I would like to use that knowledge, so it
+is time for me to revise it.
+
+This repo is a learning tool for me, where I will be implementing the
+signal processing logic as a way to help me revise it.
+
+I am working from the textbook "Signal Processing and Linear Systems"
+by B.P. Lathi. International edition, published by Oxford University
+Press in 2010.
+
