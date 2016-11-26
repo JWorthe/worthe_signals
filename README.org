@@ -1,6 +1,8 @@
 #+TITLE: Worthe Signals
 #+AUTHOR: Justin Worthe
 
+[[https://travis-ci.org/JWorthe/worthe_signals.svg?branch=master]]
+
 I did a course back in university on signal processing and linear
 systems. Unfortunately, that was several years ago and I am not as
 fluent on the topic as I would like to be.
