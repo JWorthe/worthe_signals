@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Neg};
 use ::num_traits::{Trig, Pow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -12,17 +12,22 @@ impl<T> Complex<T> {
         Complex{real: real, imag: imag}
     }
 }
+impl<T> Complex<T> where T: Neg<Output=T> {
+    pub fn conjugate(self) -> Complex<T> {
+        Complex::new(self.real, -self.imag)
+    }
+}
 
-impl<T> Complex<T> where T: Trig<T> + Mul<Output=T> + Copy {
+impl<T> Complex<T> where T: Trig + Mul<Output=T> + Copy {
     pub fn from_polar(r: T, theta: T) -> Complex<T> {
         let real = r*theta.cos();
         let imag = r*theta.sin();
         Complex::new(real, imag)
     }
 }
-impl<T> Complex<T> where T: Trig<T> + Pow<T> + Add<Output=T> + Copy  {
+impl<T> Complex<T> where T: Trig + Pow + Add<Output=T> + Copy  {
     pub fn to_polar(self) -> (T, T) {
-        let r = (self.real.powi(2) + self.imag.powi(2)).sqrt();
+        let r = (self.real.pow(2) + self.imag.pow(2)).sqrt();
         let theta = self.imag.atan2(self.real);
         (r, theta)
     }
@@ -48,6 +53,16 @@ impl<T> Sub for Complex<T> where T: Sub<Output=T> + Copy {
     }
 }
 
+impl<T> Mul for Complex<T> where T: Add<Output=T> + Mul<Output=T> + Sub<Output=T> + Copy {
+    type Output = Complex<T>;
+
+    fn mul(self, other: Self) -> Self {
+        let real = (self.real * other.real) - (self.imag * other.imag);
+        let imag = (self.real * other.imag) + (self.imag * other.real);
+        Complex::new(real, imag)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,6 +80,13 @@ mod tests {
         let a = Complex::new(1, 5);
         let b = Complex::new(-3, 2);
         assert_eq!(a-b, Complex::new(4, 3));
+    }
+
+    #[test]
+    fn multiplication() {
+        let a = Complex::new(3, 4);
+        let b = Complex::new(2, 3);
+        assert_eq!(a*b, Complex::new(-6, 17));
     }
 
 
