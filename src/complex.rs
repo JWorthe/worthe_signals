@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Neg};
+use std::ops::{Add, Sub, Mul, Div, Neg};
 use ::num_traits::{Trig, Pow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,11 +25,22 @@ impl<T> Complex<T> where T: Trig + Mul<Output=T> + Copy {
         Complex::new(real, imag)
     }
 }
+
+impl<T> Complex<T> where T: Pow + Add<Output=T> + Copy  {
+    pub fn magnitude(self) -> T {
+        (self.real.pow(2) + self.imag.pow(2)).sqrt()
+    }
+}
+
+impl<T> Complex<T> where T: Trig + Copy  {
+    pub fn angle(self) -> T {
+        self.imag.atan2(self.real)
+    }
+}
+
 impl<T> Complex<T> where T: Trig + Pow + Add<Output=T> + Copy  {
     pub fn to_polar(self) -> (T, T) {
-        let r = (self.real.pow(2) + self.imag.pow(2)).sqrt();
-        let theta = self.imag.atan2(self.real);
-        (r, theta)
+        (self.magnitude(), self.angle())
     }
 }
 
@@ -63,6 +74,22 @@ impl<T> Mul for Complex<T> where T: Add<Output=T> + Mul<Output=T> + Sub<Output=T
     }
 }
 
+impl<T> Div for Complex<T> where T: Add<Output=T> + Mul<Output=T> + Sub<Output=T> + Div<Output=T> + Neg<Output=T> + Copy {
+    type Output = Complex<T>;
+
+    fn div(self, other: Self) -> Self {
+        // multiply numerator and denominator by denominator's complex
+        // conjugate, to give a pure real denominator.
+        let other_conj = other.conjugate();
+        let num = self * other_conj;
+        let denom = (other * other_conj).real;
+
+        let real = num.real / denom;
+        let imag = num.imag / denom;
+        Complex::new(real, imag)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -89,6 +116,12 @@ mod tests {
         assert_eq!(a*b, Complex::new(-6, 17));
     }
 
+    #[test]
+    fn division() {
+        let a = Complex::new(6, 8);
+        let b = Complex::new(3, 4);
+        assert_eq!(a/b, Complex::new(2, 0));
+    }
 
     #[test]
     fn from_polar() {
