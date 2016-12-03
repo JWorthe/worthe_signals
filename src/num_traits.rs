@@ -1,3 +1,5 @@
+use std;
+
 pub trait Trig {
     fn sin(self) -> Self;
     fn cos(self) -> Self;
@@ -82,3 +84,25 @@ impl_int_pow!(u8);
 impl_int_pow!(u16);
 impl_int_pow!(u32);
 impl_int_pow!(u64);
+
+
+pub trait Float {
+    fn recip(self) -> Self;
+    fn PI() -> Self;
+}
+
+macro_rules! impl_float {
+    ($t: ty, $pi: expr) => {
+        impl Float for $t {
+            fn recip(self) -> Self {
+                self.recip()
+            }
+            fn PI() -> Self {
+                $pi
+            }
+        }
+    }
+}
+
+impl_float!(f32, std::f32::consts::PI);
+impl_float!(f64, std::f64::consts::PI);
