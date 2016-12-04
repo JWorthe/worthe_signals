@@ -88,7 +88,7 @@ impl_int_pow!(u64);
 
 pub trait Float {
     fn recip(self) -> Self;
-    fn PI() -> Self;
+    fn pi() -> Self;
 }
 
 macro_rules! impl_float {
@@ -97,7 +97,7 @@ macro_rules! impl_float {
             fn recip(self) -> Self {
                 self.recip()
             }
-            fn PI() -> Self {
+            fn pi() -> Self {
                 $pi
             }
         }
