@@ -45,6 +45,12 @@ impl<T> Complex<T> where T: Trig + Pow + ArithmeticOps + Copy  {
 impl<T> Add for Complex<T> where T: ArithmeticOps + Copy {
     type Output = Complex<T>;
 
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// let a = Complex::new(1, 5);
+    /// let b = Complex::new(-3, 2);
+    /// assert_eq!(a+b, Complex::new(-2, 7));
+    /// ```
     fn add(self, other: Self) -> Self {
         let real = self.real + other.real;
         let imag = self.imag + other.imag;
@@ -55,6 +61,12 @@ impl<T> Add for Complex<T> where T: ArithmeticOps + Copy {
 impl<T> Sub for Complex<T> where T: ArithmeticOps + Copy {
     type Output = Complex<T>;
 
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// let a = Complex::new(1, 5);
+    /// let b = Complex::new(-3, 2);
+    /// assert_eq!(a-b, Complex::new(4, 3));
+    /// ```
     fn sub(self, other: Self) -> Self {
         let real = self.real - other.real;
         let imag = self.imag - other.imag;
@@ -97,22 +109,29 @@ impl<T> Neg for Complex<T> where T: SignedArithmeticOps + Copy {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests {  
     use super::*;
     use std::f32;
-    
-    #[test]
-    fn addition() {
-        let a = Complex::new(1, 5);
-        let b = Complex::new(-3, 2);
-        assert_eq!(a+b, Complex::new(-2, 7));
-    }
 
-    #[test]
-    fn subtraction() {
-        let a = Complex::new(1, 5);
-        let b = Complex::new(-3, 2);
-        assert_eq!(a-b, Complex::new(4, 3));
+    mod addition {
+        use super::super::*;
+        use std::i32;
+        
+        quickcheck! {
+            fn zero(real: i32, imag: i32) -> bool {
+                let com = Complex::new(real, imag);
+                let zero = Complex::new(0, 0);
+                com == com + zero
+            }
+            fn double(real: i32, imag: i32) -> bool {
+                let com = Complex::new(real, imag);
+                com+com == com*Complex::new(2, 0)
+            }
+            fn inverse(real: i32, imag: i32) -> bool {
+                let com = Complex::new(real, imag);
+                com == com+com-com
+            }
+        }
     }
 
     #[test]
