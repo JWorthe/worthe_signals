@@ -86,23 +86,36 @@ impl_int_pow!(u32);
 impl_int_pow!(u64);
 
 
-pub trait Float {
+use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
+
+pub trait ArithmeticOps: Add<Output=Self> + Sub<Output=Self> + Mul<Output=Self> + Div<Output=Self> + Rem<Output=Self> where Self: std::marker::Sized {}
+impl<T> ArithmeticOps for T where T: Add<Output=T> + Sub<Output=T> + Mul<Output=T> + Div<Output=T> + Rem<Output=T> {}
+
+pub trait SignedArithmeticOps: ArithmeticOps + Neg<Output=Self> where Self: std::marker::Sized {}
+impl<T> SignedArithmeticOps for T where T: ArithmeticOps + Neg<Output=T> {}
+
+
+pub trait FractionOps {
     fn recip(self) -> Self;
     fn pi() -> Self;
+    fn two_pi() -> Self;
 }
 
-macro_rules! impl_float {
+macro_rules! impl_fraction_float {
     ($t: ty, $pi: expr) => {
-        impl Float for $t {
+        impl FractionOps for $t {
             fn recip(self) -> Self {
                 self.recip()
             }
             fn pi() -> Self {
                 $pi
             }
+            fn two_pi() -> Self {
+                2.0 * $pi
+            }
         }
     }
 }
 
-impl_float!(f32, std::f32::consts::PI);
-impl_float!(f64, std::f64::consts::PI);
+impl_fraction_float!(f32, std::f32::consts::PI);
+impl_fraction_float!(f64, std::f64::consts::PI);

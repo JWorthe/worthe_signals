@@ -1,6 +1,5 @@
 use std::cmp::{PartialOrd};
-use std::ops::{Add, Sub, Mul, Div, Rem};
-use ::num_traits::{Trig, Float};
+use ::num_traits::{Trig, ArithmeticOps, FractionOps};
 
 // generic number type, but realistically it's only useful for
 // floats. Maybe also complex<float>
@@ -20,21 +19,22 @@ impl<T> Sinusoid<T> {
         }
     }
 }
-impl<T> Sinusoid<T> where T: Float + Copy {
+impl<T> Sinusoid<T> where T: FractionOps + Copy {
     pub fn period(&self) -> T {
         self.frequency.recip()
     }
 }
-impl<T> Sinusoid<T> where T: Float + Add<Output=T> + Sub<Output=T> + Mul<Output=T> + Div<Output=T> + From<u16> + Trig + Copy + PartialOrd + Rem<Output=T> {
+impl<T> Sinusoid<T> where T: FractionOps + ArithmeticOps + Trig + Copy {
     pub fn radial_frequency(&self) -> T {
-        (T::from(2))*T::pi()*self.frequency
+        T::two_pi()*self.frequency
     }
     pub fn sample(&self, t: T) -> T {
         (self.radial_frequency()*(t%self.period()) + self.phase).cos() * self.amplitude
     }
+}
+impl<T> Sinusoid<T> where T: FractionOps + ArithmeticOps + From<u16> + Trig + Copy + PartialOrd {
     //inclusive of start, exclusive of end
     pub fn sample_range(&self, start: T, end: T, sample_rate: T) -> Vec<T> {
-        let sample_resolution = T::from(1) / sample_rate;
         let mut result = Vec::new();
         let mut i: u16 = 0;
         loop {
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn sample() {
-        let sinusoid = Sinusoid::new(1.0 as f32, 1.0, -f32::consts::PI/2.0); //AKA sin
+        let sinusoid = Sinusoid::new(1.0 as f32, 1.0, -f32::consts::FRAC_PI_2); //AKA sin
 
         assert!((sinusoid.sample(0.0)-0.0) < f32::EPSILON);
         assert!((sinusoid.sample(0.25)-1.0) < f32::EPSILON);
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn sample_range() {
-        let sinusoid = Sinusoid::new(1.0 as f32, 1.0, -f32::consts::PI/2.0); //AKA sin
+        let sinusoid = Sinusoid::new(1.0 as f32, 1.0, -f32::consts::FRAC_PI_2); //AKA sin
         let samples = sinusoid.sample_range(0.0, 100.0, 4.0);
         println!("Epsilon is {}", f32::EPSILON);
         assert_eq!(samples.len(), 400);
