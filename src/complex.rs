@@ -3,8 +3,8 @@ use ::num_traits::{Trig, Pow, ArithmeticOps, SignedArithmeticOps};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Complex<T> {
-    real: T,
-    imag: T
+    pub real: T,
+    pub imag: T
 }
 
 impl<T> Complex<T> {
@@ -31,6 +31,34 @@ impl<T> Complex<T> where T: Trig  {
 }
 
 impl<T> Complex<T> where T: Trig + Pow + ArithmeticOps + Copy  {
+
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// use std::f32;
+    ///
+    /// let right = Complex::from_polar(1.0 as f32, 0.0 as f32);
+    /// assert!((right.real-1.0).abs() < f32::EPSILON);
+    /// assert!((right.imag-0.0).abs() < f32::EPSILON);
+    ///
+    /// let up = Complex::from_polar(1.0 as f32, f32::consts::PI/2.0);
+    /// assert!((up.real-0.0).abs() < f32::EPSILON/2.0);
+    /// assert!((up.imag-1.0).abs() < f32::EPSILON/2.0);
+    ///
+    /// let left = Complex::from_polar(1.0 as f32, f32::consts::PI);
+    /// assert!((left.real+1.0).abs() < f32::EPSILON);
+    /// assert!((left.imag-0.0).abs() < f32::EPSILON);
+    ///
+    /// let down = Complex::from_polar(1.0 as f32, f32::consts::PI*3.0/2.0);
+    /// assert!((down.real-0.0).abs() < f32::EPSILON);
+    /// assert!((down.imag+1.0).abs() < f32::EPSILON);
+    ///
+    /// //not sure why the error here is more than epsilon. My guess
+    /// // is that it's the 2.0*PI, meaning that the value for PI has
+    /// // twice the normal error.
+    /// let rev = Complex::from_polar(1.0 as f32, f32::consts::PI*2.0);
+    /// assert!((rev.real-1.0).abs() < f32::EPSILON*2.0);
+    /// assert!((rev.imag-0.0).abs() < f32::EPSILON*2.0);
+    /// ```
     pub fn from_polar(r: T, theta: T) -> Complex<T> {
         let real = r*theta.cos();
         let imag = r*theta.sin();
@@ -77,6 +105,12 @@ impl<T> Sub for Complex<T> where T: ArithmeticOps + Copy {
 impl<T> Mul for Complex<T> where T: ArithmeticOps + Copy {
     type Output = Complex<T>;
 
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// let a = Complex::new(3, 4);
+    /// let b = Complex::new(2, 3);
+    /// assert_eq!(a*b, Complex::new(-6, 17));
+    /// ```
     fn mul(self, other: Self) -> Self {
         let real = (self.real * other.real) - (self.imag * other.imag);
         let imag = (self.real * other.imag) + (self.imag * other.real);
@@ -87,6 +121,12 @@ impl<T> Mul for Complex<T> where T: ArithmeticOps + Copy {
 impl<T> Div for Complex<T> where T: SignedArithmeticOps + Copy {
     type Output = Complex<T>;
 
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// let a = Complex::new(6, 8);
+    /// let b = Complex::new(3, 4);
+    /// assert_eq!(a/b, Complex::new(2, 0));
+    /// ```
     fn div(self, other: Self) -> Self {
         // multiply numerator and denominator by denominator's complex
         // conjugate, to give a pure real denominator.
@@ -103,6 +143,11 @@ impl<T> Div for Complex<T> where T: SignedArithmeticOps + Copy {
 impl<T> Neg for Complex<T> where T: SignedArithmeticOps + Copy {
     type Output = Complex<T>;
 
+    /// ```
+    /// use worthe_signals::complex::Complex;
+    /// let a = Complex::new(6, 8);
+    /// assert_eq!(-a, Complex::new(0, 0)-a);
+    /// ```
     fn neg(self) -> Self {
         Complex::new(-self.real, -self.imag)
     }
@@ -111,73 +156,49 @@ impl<T> Neg for Complex<T> where T: SignedArithmeticOps + Copy {
 #[cfg(test)]
 mod tests {  
     use super::*;
-    use std::f32;
-
-    mod addition {
-        use super::super::*;
-        use std::i32;
-        
-        quickcheck! {
-            fn zero(real: i32, imag: i32) -> bool {
-                let com = Complex::new(real, imag);
-                let zero = Complex::new(0, 0);
-                com == com + zero
-            }
-            fn double(real: i32, imag: i32) -> bool {
-                let com = Complex::new(real, imag);
-                com+com == com*Complex::new(2, 0)
-            }
-            fn inverse(real: i32, imag: i32) -> bool {
-                let com = Complex::new(real, imag);
-                com == com+com-com
-            }
+    use std::i32;
+    
+    quickcheck! {
+        fn add_zero(real: i32, imag: i32) -> bool {
+            let com = Complex::new(real, imag);
+            let zero = Complex::new(0, 0);
+            com == com + zero
         }
-    }
+        fn sub_zero(real: i32, imag: i32) -> bool {
+            let com = Complex::new(real, imag);
+            let zero = Complex::new(0, 0);
+            com == com - zero
+        }
+        fn times_zero(real: i32, imag: i32) -> bool {
+            let com = Complex::new(real, imag);
+            let zero = Complex::new(0, 0);
+            zero == com * zero
+        }
+        fn times_one(real: i32, imag: i32) -> bool {
+            let com = Complex::new(real, imag);
+            let one = Complex::new(1, 0);
+            com == com * one
+        }
+        fn double(real: i32, imag: i32) -> bool {
+            let com = Complex::new(real, imag);
+            com+com == com*Complex::new(2, 0)
+        }
+        fn additive_inverse(real1: i32, imag1: i32, real2: i32, imag2: i32) -> bool {
+            let com1 = Complex::new(real1, imag1);
+            let com2 = Complex::new(real2, imag2);
+            com1 == (com1+com2)-com2
+        }
+        fn multiplicative_inverse(real1: i32, imag1: i32, real2: i32, imag2: i32) -> bool {
+            let com1 = Complex::new(real1, imag1);
+            let com2 = Complex::new(real2, imag2);
+            com1 == (com1*com2)/com2
+        }
 
-    #[test]
-    fn multiplication() {
-        let a = Complex::new(3, 4);
-        let b = Complex::new(2, 3);
-        assert_eq!(a*b, Complex::new(-6, 17));
-    }
-
-    #[test]
-    fn division() {
-        let a = Complex::new(6, 8);
-        let b = Complex::new(3, 4);
-        assert_eq!(a/b, Complex::new(2, 0));
-    }
-
-    #[test]
-    fn neg() {
-        let a = Complex::new(6, 8);
-        assert_eq!(-a, Complex::new(0, 0)-a);
-    }
-
-    #[test]
-    fn from_polar() {
-        let right = Complex::from_polar(1.0 as f32, 0.0 as f32);
-        assert!((right.real-1.0).abs() < f32::EPSILON);
-        assert!((right.imag-0.0).abs() < f32::EPSILON);
-
-        let up = Complex::from_polar(1.0 as f32, f32::consts::PI/2.0);
-        assert!((up.real-0.0).abs() < f32::EPSILON/2.0);
-        assert!((up.imag-1.0).abs() < f32::EPSILON/2.0);
-
-        let left = Complex::from_polar(1.0 as f32, f32::consts::PI);
-        assert!((left.real+1.0).abs() < f32::EPSILON);
-        assert!((left.imag-0.0).abs() < f32::EPSILON);
-
-        let down = Complex::from_polar(1.0 as f32, f32::consts::PI*3.0/2.0);
-        assert!((down.real-0.0).abs() < f32::EPSILON);
-        assert!((down.imag+1.0).abs() < f32::EPSILON);
-
-        //not sure why the error here is more than epsilon. My guess
-        // is that it's the 2.0*PI, meaning that the value for PI has
-        // twice the normal error.
-        let rev = Complex::from_polar(1.0 as f32, f32::consts::PI*2.0);
-        assert!((rev.real-1.0).abs() < f32::EPSILON*2.0);
-        assert!((rev.imag-0.0).abs() < f32::EPSILON*2.0);
+        fn commutative_addition(real1: i32, imag1: i32, real2: i32, imag2: i32) -> bool {
+            let com1 = Complex::new(real1, imag1);
+            let com2 = Complex::new(real2, imag2);
+            com1 + com2 == com2 + com1
+        }
     }
 }
 
