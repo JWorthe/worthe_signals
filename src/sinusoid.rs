@@ -46,9 +46,9 @@ pub enum AddSinusoidError {
 }
 
 impl<T> Sinusoid<T> where T: Trig + Pow + ArithmeticOps + Copy {
-    /// Converts the sinusoid to phaser form
+    /// Converts the sinusoid to phasor form
     ///
-    /// This discards the frequency. Take care to only compare phasers
+    /// This discards the frequency. Take care to only compare phasors
     /// that had the same frequency before their conversion.
     ///
     /// ```
@@ -57,16 +57,16 @@ impl<T> Sinusoid<T> where T: Trig + Pow + ArithmeticOps + Copy {
     /// use std::f32;
     
     /// let pure_real = Sinusoid::new(1.0 as f32, 0.5, 0.0);    
-    /// let pure_real_phasor = pure_real.to_phaser();
+    /// let pure_real_phasor = pure_real.to_phasor();
     /// assert!((pure_real_phasor.real - 1.0).abs() < f32::EPSILON);
     /// assert!((pure_real_phasor.imag - 0.0).abs() < f32::EPSILON);
     ///
     /// let pure_imag = Sinusoid::new(1.0 as f32, 2.0, -f32::consts::FRAC_PI_2);
-    /// let pure_imag_phasor = pure_imag.to_phaser();
+    /// let pure_imag_phasor = pure_imag.to_phasor();
     /// assert!((pure_imag_phasor.real - 0.0).abs() < f32::EPSILON);
     /// assert!((pure_imag_phasor.imag + 1.0).abs() < f32::EPSILON);
     /// ```
-    pub fn to_phaser(self) -> Complex<T> {
+    pub fn to_phasor(self) -> Complex<T> {
         Complex::from_polar(self.amplitude, self.phase)
     }
 }
@@ -103,9 +103,9 @@ impl<T> Sinusoid<T> where T: Trig + Pow + ArithmeticOps + PartialEq + Copy {
         }
         else {
             let frequency = self.frequency;
-            let self_phaser = self.to_phaser();
-            let other_phaser = other.to_phaser();
-            let combined = self_phaser + other_phaser;
+            let self_phasor = self.to_phasor();
+            let other_phasor = other.to_phasor();
+            let combined = self_phasor + other_phasor;
             let (amplitude, phase) = combined.to_polar();
             Ok(Sinusoid::new(amplitude, frequency, phase))
         }
