@@ -99,6 +99,8 @@ pub trait FractionOps {
     fn recip(self) -> Self;
     fn pi() -> Self;
     fn two_pi() -> Self;
+    fn half_pi() -> Self;
+    fn zero() -> Self;
 }
 
 macro_rules! impl_fraction_float {
@@ -112,6 +114,12 @@ macro_rules! impl_fraction_float {
             }
             fn two_pi() -> Self {
                 2.0 * $pi
+            }
+            fn half_pi() -> Self {
+                $pi / 2.0
+            }
+            fn zero() -> Self {
+                0.0
             }
         }
     }

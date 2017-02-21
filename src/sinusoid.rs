@@ -1,5 +1,5 @@
 use std::cmp::{PartialOrd};
-use ::num_traits::{Trig, Pow, ArithmeticOps, FractionOps};
+use ::num_traits::{Trig, Pow, ArithmeticOps, SignedArithmeticOps, FractionOps};
 use ::complex::Complex;
 
 /// A data structure representing a sinusoid. AKA the sin or cos functions.
@@ -10,9 +10,9 @@ use ::complex::Complex;
 /// floats.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Sinusoid<T> {
-    amplitude: T,
-    frequency: T,
-    phase: T
+    pub amplitude: T,
+    pub frequency: T,
+    pub phase: T
 }
 
 impl<T> Sinusoid<T> {
@@ -68,6 +68,33 @@ impl<T> Sinusoid<T> where T: Trig + Pow + ArithmeticOps + Copy {
     /// ```
     pub fn to_phasor(self) -> Complex<T> {
         Complex::from_polar(self.amplitude, self.phase)
+    }
+
+}
+
+impl<T> Sinusoid<T> where T: Trig + Pow + SignedArithmeticOps + FractionOps + Copy {
+    /// Splits the sinusoid into cos and sin components
+    ///
+    /// ```
+    /// use worthe_signals::sinusoid::Sinusoid;
+    /// use std::f32;
+    ///
+    /// let cos_component = Sinusoid::new(-3.0 as f32, 1.0, 0.0);
+    /// let sin_component = Sinusoid::new(4.0 as f32, 1.0, -f32::consts::FRAC_PI_2);
+    /// let combined = cos_component.clone().add(sin_component.clone()).expect("I know this won't panic because the frequencies are hardcoded to be the same");
+    ///
+    /// let (recovered_cos, recovered_sin) = combined.to_orthogonal_components();
+    ///
+    /// //there is a small loss of precision when going back and forth between split components and one sinusoid.
+    /// assert!((cos_component.amplitude - recovered_cos.amplitude).abs() < 0.000001);
+    /// assert!((sin_component.amplitude - recovered_sin.amplitude).abs() < 0.000001);
+    /// ```
+    pub fn to_orthogonal_components(self) -> (Self, Self) {
+        let frequency = self.frequency;
+        let phasor = self.to_phasor();
+        let cos = Sinusoid::new(phasor.real, frequency, T::zero());
+        let sin = Sinusoid::new(-phasor.imag, frequency, -T::half_pi());
+        (cos, sin)
     }
 }
 
